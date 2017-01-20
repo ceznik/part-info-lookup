@@ -72,14 +72,13 @@ app.get('/motorcraft/:partnum', function(req, res){
 
 			return productInfo;
 		})
-		.end()
 		.then(function (result) {
 		res.send(result);
+		console.log("Results sent to browser.");
 		})
 		.catch(function (error) {
 		console.error('Search failed:', error);
 		});
-		console.log("Route steps completed");
 	});
 });
 
