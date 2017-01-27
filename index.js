@@ -37,6 +37,7 @@ app.get('/motorcraft/:partnum', function(req, res){
 		.click('#btnSearchByInterchange') // 
 		.wait('.rptrInterchageParts_item')
 		.click('#ctl00_MainContent_rptrInterchangeResult_ctl01_rptrInterchageParts_ctl00_lbtnFordPartNumber')
+		// "a:contains('" + req.params.partnum + "')"   
 		.wait('.PartDetailsPanel')
 		.evaluate(function () {
 			var productInfo = '<!DOCTYPE html>' +
@@ -52,14 +53,21 @@ app.get('/motorcraft/:partnum', function(req, res){
 								'<th> PicURLs </th>' +
 								'</tr>' +
 								'<tr>';
-
 			var Part = $("p:contains('Part Number')").text().replace("Part Number: ", "");
 			var Weight = $("#divWeight").text().replace("Weight: ", "");
 			var Dimensions = $("#divDimensions").text().replace("Dimensions: ", "");
 			var images = [];
-			$(".Thumbnails").find("img").each(function(i, elem){
-				images[i] = "http://www.fordparts.com" + ($(this).attr("src").replace("&dw=42&dh=42","&dw=0&dh=0"));
-			});
+			if($(".Thumbnails").length > 0 ){
+				$(".Thumbnails").find("img").each(function(i, elem){
+					images[i] = "http://www.fordparts.com" + ($(this).attr("src").replace("&dw=42&dh=42","&dw=0&dh=0"));
+				});
+			}
+			else if ($(".MediumImage").length > 0){
+				images[0] = "http://www.fordparts.com" + $(".MediumImage").find("img").attr("src").replace("&dw=150&dh=150","&dw=0&dh=0");
+			}
+			else{
+				images[0] = "N/A";
+			}
 			productInfo += '<td>' + Part + '</td>' +
 						   '<td>' + Weight +'</td>' + 
 						   '<td>' + Dimensions + '</td>' + 
@@ -71,6 +79,8 @@ app.get('/motorcraft/:partnum', function(req, res){
 
 
 			return productInfo;
+			
+
 		})
 		.then(function (result) {
 		res.send(result);
