@@ -33,13 +33,10 @@ app.get('/mopar/:partnum', function(req, res){
 		if (error) throw error;
 		nightmare
 		.goto(url)
-		//.click(".InterchangeTab > a")
-		.type('#main_search_7', req.params.partnum) // 
-		.click('#btnSearchByInterchange') // 
-		.wait('.rptrInterchageParts_item')
-		.click('#ctl00_MainContent_rptrInterchangeResult_ctl01_rptrInterchageParts_ctl00_lbtnFordPartNumber')
-		// "a:contains('" + req.params.partnum + "')"   
-		.wait('.PartDetailsPanel')
+		.wait('body')
+		.type('#main_search_7', req.params.partnum + '\r') // 
+		//.click('button.button-start-search') // 
+		.wait('page-builder-layout-module')
 		.evaluate(function () {
 			var productInfo = '<!DOCTYPE html>' +
 							  '<html>' + 
@@ -49,30 +46,31 @@ app.get('/mopar/:partnum', function(req, res){
 							  '<table>'+
 								'<tr>'+
 								'<th> Part Number </th>' +
-								'<th> Weight </th>' +
-								'<th> Dimensions </th>' +
-								'<th> PicURLs </th>' +
+								'<th> Status </th>' +
+								'<th> Comment </th>' +
 								'</tr>' +
 								'<tr>';
-			var Part = $("p:contains('Part Number')").text().replace("Part Number: ", "");
-			var Weight = $("#divWeight").text().replace("Weight: ", "");
-			var Dimensions = $("#divDimensions").text().replace("Dimensions: ", "");
-			var images = [];
-			if($(".Thumbnails").length > 0 ){
-				$(".Thumbnails").find("img").each(function(i, elem){
-					images[i] = "http://www.fordparts.com" + ($(this).attr("src").replace("&dw=42&dh=42","&dw=0&dh=0"));
-				});
+			var Part = "";
+			var Status = "";
+			var Comment = "";
+			if($(".no-results-found > p")){
+				//Part = req.params.partnum;
+				Status = $(".no-result-found p").text();;
+				Comment = "Dropped";
 			}
-			else if ($(".MediumImage").length > 0){
-				images[0] = "http://www.fordparts.com" + $(".MediumImage").find("img").attr("src").replace("&dw=150&dh=150","&dw=0&dh=0");
+			else if($(".cannot-purchase discontinued-part > h3")){
+				Part = $(".part_number span:last-child").text();
+				Status = $(".discontinued-part h3").text();
+				Comment = $(".discontinued-part p").text();
 			}
-			else{
-				images[0] = "N/A";
+			else if($(".add-to-cart").length > 0){
+				Part = $(".part_number span:last-child").text();
+				Status = "Available for Purchase";
+				Comment = $(".sale-price span:last-child").text();
 			}
 			productInfo += '<td>' + Part + '</td>' +
-						   '<td>' + Weight +'</td>' + 
-						   '<td>' + Dimensions + '</td>' + 
-						   '<td>' + images.join("|") + '</td>' +
+						   '<td>' + Status +'</td>' + 
+						   '<td>' + Comment + '</td>' + 
 						   '</td>' +
 						   '</table>' + 
 						   '</body>' +
@@ -86,6 +84,7 @@ app.get('/mopar/:partnum', function(req, res){
 		.then(function (result) {
 		res.send(result);
 		console.log("Results sent to browser.");
+		//console.log(result);
 		})
 		.catch(function (error) {
 			console.error('Search failed:', error);
@@ -97,14 +96,12 @@ app.get('/mopar/:partnum', function(req, res){
 								  '<table>'+
 									'<tr>'+
 									'<th> Part Number </th>' +
-									'<th> Weight </th>' +
-									'<th> Dimensions </th>' +
-									'<th> PicURLs </th>' +
+									'<th> Status </th>' +
+									'<th> Comment </th>' +
 									'</tr>' +
 									'<tr>' +
 									'<td>' + "N/A" + '</td>' +
 									'<td>' + "N/A" +'</td>' + 
-									'<td>' + "N/A" + '</td>' + 
 									'<td>' + "N/A" + '</td>' +
 									'</td>' +
 									'</table>' + 
