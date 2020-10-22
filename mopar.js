@@ -36,7 +36,7 @@ app.get('/mopar/:partnum', function(req, res){
 		.wait('body')
 		.type('#main_search_7', req.params.partnum + '\r') // 
 		//.click('button.button-start-search') // 
-		.wait('page-builder-layout-module')
+		.wait('.purchase-box')
 		.evaluate(function () {
 			var productInfo = '<!DOCTYPE html>' +
 							  '<html>' + 
@@ -53,17 +53,18 @@ app.get('/mopar/:partnum', function(req, res){
 			var Part = "";
 			var Status = "";
 			var Comment = "";
-			if($(".no-results-found > p")){
-				//Part = req.params.partnum;
-				Status = $(".no-result-found p").text();;
-				Comment = "Dropped";
-			}
-			else if($(".cannot-purchase discontinued-part > h3")){
+			// if($(".no-results-found > p")){
+			// 	console.log($(".no-results-found p").text());
+			// 	//Part = req.params.partnum;
+			// 	Status = $(".no-result-found p").text();;
+			// 	Comment = "Dropped";
+			// }
+			if($(".cannot-purchase discontinued-part > h3")){
 				Part = $(".part_number span:last-child").text();
 				Status = $(".discontinued-part h3").text();
 				Comment = $(".discontinued-part p").text();
 			}
-			else if($(".add-to-cart").length > 0){
+			else if($(".add-to-cart")){
 				Part = $(".part_number span:last-child").text();
 				Status = "Available for Purchase";
 				Comment = $(".sale-price span:last-child").text();
@@ -81,6 +82,7 @@ app.get('/mopar/:partnum', function(req, res){
 			
 
 		})
+		.end()
 		.then(function (result) {
 		res.send(result);
 		console.log("Results sent to browser.");
